@@ -2,13 +2,28 @@
 
 一个用于管理 GitHub Star List（收藏列表）的 Claude Code skill。通过 GitHub GraphQL API 实现对 star list 的读取、添加仓库到指定列表等操作。
 
+## 插件结构
+
+本 skill 采用 Claude Code 插件格式：
+
+```
+.claude-plugin/
+  plugin.json      — 插件清单（名称、版本、作者、keywords、skills 路径）
+  marketplace.json — 市场元数据（owner、metadata、plugins 数组）
+skills/github-starlist/
+  SKILL.md         — Skill 定义文件（triggers、tags、指令文档）
+```
+
 ## 功能
 
-- 读取指定 star list 中的所有仓库
+- 读取指定 star list 中的所有仓库（支持分页）
 - 将仓库 star 并添加到指定 list
 - 从 list 中移除仓库
+- 取消 star 仓库
 - 列出用户所有 star list
 - 创建新的 star list
+- 删除 list
+- 重命名 list
 
 ## 前置条件
 
@@ -17,7 +32,7 @@
 
 ## 使用方式
 
-将本目录下的 `skill.md` 文件内容加载到 Claude Code 会话中即可。Claude 会自动识别相关指令并执行。
+将 `skills/github-starlist/SKILL.md` 文件内容加载到 Claude Code 会话中即可。Claude 会自动识别相关指令并执行。
 
 ## 常用命令
 
@@ -27,10 +42,18 @@
 gh api graphql -f query='{ viewer { lists(first: 20) { nodes { id name slug } } } }'
 ```
 
-### 读取指定 list 中的仓库
+### 读取指定 list 中的仓库（支持分页）
+
+基础查询（前 50 个）：
 
 ```bash
-gh api graphql -f query='{ node(id: "<LIST_ID>") { ... on UserList { name items(first: 50) { nodes { ... on Repository { nameWithOwner } } } } } }' -q '.data.node.items.nodes[].nameWithOwner'
+gh api graphql -f query='{ node(id: "<LIST_ID>") { ... on UserList { name items(first: 50) { nodes { ... on Repository { nameWithOwner } } pageInfo { hasNextPage endCursor } } } } }' -q '.data.node.items.nodes[].nameWithOwner'
+```
+
+分页查询（获取后续内容）：
+
+```bash
+gh api graphql -f query='{ node(id: "<LIST_ID>") { ... on UserList { name items(first: 50, after: "<END_CURSOR>") { nodes { ... on Repository { nameWithOwner } } pageInfo { hasNextPage endCursor } } } } }'
 ```
 
 ### Star 仓库
@@ -65,6 +88,12 @@ gh api graphql -f query='mutation { createUserList(input: { name: "<LIST_NAME>",
 
 ```bash
 gh api graphql -f query='mutation { deleteUserList(input: { id: "<LIST_ID>" }) { clientMutationId } }'
+```
+
+### 重命名 list
+
+```bash
+gh api graphql -f query='mutation { updateUserList(input: { id: "<LIST_ID>", name: "<NEW_NAME>" }) { userList { id name slug } } }'
 ```
 
 ## 注意事项

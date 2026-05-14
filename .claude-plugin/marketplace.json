@@ -1,0 +1,29 @@
+{
+  "name": "github-starlist-skill",
+  "id": "github-starlist-skill",
+  "owner": {
+    "name": "Shallow-W"
+  },
+  "metadata": {
+    "description": "GitHub Star List management skill for Claude Code via GraphQL API",
+    "version": "1.1.0"
+  },
+  "plugins": [
+    {
+      "name": "github-starlist-skill",
+      "source": "./",
+      "description": "Manage GitHub Star Lists: list, read, add, remove, create, delete, rename, unstar, paginate",
+      "version": "1.1.0",
+      "author": {
+        "name": "Shallow-W"
+      },
+      "keywords": [
+        "github",
+        "star-list",
+        "graphql",
+        "skill"
+      ],
+      "category": "integration"
+    }
+  ]
+}
